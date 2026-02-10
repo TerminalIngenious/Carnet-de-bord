@@ -55,7 +55,7 @@ function Home({ setCurrentPage }) {
         {/* Section Hero */}
       <section className={styles.hero}>
         <div className={styles.avatar}>
-          <img src="../public/pdp.jpg" alt="" />
+          <img src="/pdp.jpg" alt="" />
         </div>
         <h1 className={styles.name}>Mattéo</h1>
         <p className={styles.formation}>
