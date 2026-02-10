@@ -4,7 +4,7 @@ import styles from './Header.module.css'
 
 function Header({ currentPage, setCurrentPage }) {
   const [menuOpen, setMenuOpen] = useState(false)
-  const { user, logout, isAuthenticated } = useAuth()
+  const { logout, isAuthenticated } = useAuth()
 
   const handleNavClick = (page) => {
     setCurrentPage(page)
