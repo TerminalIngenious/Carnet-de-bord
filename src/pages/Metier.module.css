@@ -1,0 +1,170 @@
+.page {
+  min-height: 100vh;
+  background-color: var(--background);
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 48px 32px;
+}
+
+/* Header */
+.header {
+  margin-bottom: 40px;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--text-dark);
+  margin-bottom: 16px;
+}
+
+.tags {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Sections */
+.section {
+  margin-bottom: 32px;
+  margin-top: 32px;
+}
+
+.sectionTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 16px;
+}
+
+.description {
+  color: var(--text-gray);
+  line-height: 1.8;
+}
+
+/* Missions */
+.missionsList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.missionItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  color: var(--text-dark);
+}
+
+.missionNumber {
+  width: 28px;
+  height: 28px;
+  background-color: var(--primary-light);
+  color: var(--primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* Compétences */
+.skillsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.skillsLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 16px;
+}
+
+.skillsTags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 32px 16px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .skillsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* Interview */
+.interviewHeader {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.interviewAvatar {
+  width: 64px;
+  height: 64px;
+  background-color: var(--primary-light);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+}
+
+.interviewName {
+  font-weight: 600;
+  color: var(--text-dark);
+  font-size: 18px;
+}
+
+.interviewRole {
+  color: var(--text-gray);
+  font-size: 14px;
+}
+
+.interviewQuestions {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.questionBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.question {
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.answer {
+  color: var(--text-gray);
+  font-style: italic;
+  line-height: 1.7;
+  padding-left: 16px;
+  border-left: 3px solid var(--primary-light);
+}
