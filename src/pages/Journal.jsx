@@ -1,77 +1,78 @@
-import { useState, useEffect } from 'react'
-import styles from "./Journal.module.css"
-import Tag from "../components/Tag"
-import Card from '../components/Card'
-import Modal from '../components/Modal'
-import { useAuth } from '../context/AuthContext'
-import { getEntries, deleteEntry } from '../services/entries'
+import { useState, useEffect } from "react";
+import styles from "./Journal.module.css";
+import Tag from "../components/Tag";
+import Card from "../components/Card";
+import Modal from "../components/Modal";
+import { useAuth } from "../context/AuthContext";
+import { getEntries, deleteEntry } from "../services/entries";
+import { Trash2 } from "lucide-react";
 
 function Journal({ setCurrentPage }) {
-  const { isAuthenticated } = useAuth()
-  const [entries, setEntries] = useState([])
-  const [loading, setLoading] = useState(true)
-  
+  const { isAuthenticated } = useAuth();
+  const [entries, setEntries] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   // États pour le modal
-  const [modalOpen, setModalOpen] = useState(false)
+  const [modalOpen, setModalOpen] = useState(false);
   const [modalConfig, setModalConfig] = useState({
-    title: '',
-    message: '',
-    type: 'confirm',
-    onConfirm: () => {}
-  })
+    title: "",
+    message: "",
+    type: "confirm",
+    onConfirm: () => {},
+  });
 
   // Récupère les entrées au chargement de la page
   useEffect(() => {
     const fetchEntries = async () => {
       try {
-        const data = await getEntries()
-        setEntries(data)
+        const data = await getEntries();
+        setEntries(data);
       } catch (error) {
-        console.error('Erreur:', error)
+        console.error("Erreur:", error);
       }
-      setLoading(false)
-    }
+      setLoading(false);
+    };
 
-    fetchEntries()
-  }, [])
+    fetchEntries();
+  }, []);
 
   // Fonction pour afficher un modal
   const showModal = (config) => {
-    setModalConfig(config)
-    setModalOpen(true)
-  }
+    setModalConfig(config);
+    setModalOpen(true);
+  };
 
   // Fonction de suppression
   const handleDelete = (id, title) => {
     showModal({
-      title: 'Supprimer cette entrée ?',
+      title: "Supprimer cette entrée ?",
       message: `Tu vas supprimer "${title}". Cette action est irréversible.`,
-      type: 'confirm',
+      type: "confirm",
       onConfirm: async () => {
         try {
-          await deleteEntry(id)
-          setEntries(entries.filter(entry => entry.id !== id))
-          setModalOpen(false)
-          
+          await deleteEntry(id);
+          setEntries(entries.filter((entry) => entry.id !== id));
+          setModalOpen(false);
+
           // Affiche un modal de succès
           showModal({
-            title: 'Entrée supprimée',
-            message: 'L\'entrée a été supprimée avec succès.',
-            type: 'success',
-            onConfirm: () => setModalOpen(false)
-          })
+            title: "Entrée supprimée",
+            message: "L'entrée a été supprimée avec succès.",
+            type: "success",
+            onConfirm: () => setModalOpen(false),
+          });
         } catch (error) {
-          setModalOpen(false)
+          setModalOpen(false);
           showModal({
-            title: 'Erreur',
-            message: 'Une erreur est survenue lors de la suppression. '+ error,
-            type: 'error',
-            onConfirm: () => setModalOpen(false)
-          })
+            title: "Erreur",
+            message: "Une erreur est survenue lors de la suppression. " + error,
+            type: "error",
+            onConfirm: () => setModalOpen(false),
+          });
         }
-      }
-    })
-  }
+      },
+    });
+  };
 
   return (
     <div className={styles.page}>
@@ -85,11 +86,11 @@ function Journal({ setCurrentPage }) {
                 Suivi quotidien de mes activités chez Caplaser
               </p>
             </div>
-            
+
             {isAuthenticated && (
-              <button 
+              <button
                 className={styles.addButton}
-                onClick={() => setCurrentPage('addEntry')}
+                onClick={() => setCurrentPage("addEntry")}
               >
                 + Ajouter une entrée
               </button>
@@ -109,9 +110,9 @@ function Journal({ setCurrentPage }) {
           <div className={styles.empty}>
             <p>📝 Aucune entrée pour le moment.</p>
             {isAuthenticated && (
-              <button 
+              <button
                 className={styles.addButton}
-                onClick={() => setCurrentPage('addEntry')}
+                onClick={() => setCurrentPage("addEntry")}
               >
                 Ajouter ma première entrée
               </button>
@@ -136,25 +137,27 @@ function Journal({ setCurrentPage }) {
                           ⏱️ {entry.duration}h
                         </span>
                         {isAuthenticated && (
-                          <button 
+                          <button
                             className={styles.deleteButton}
                             onClick={() => handleDelete(entry.id, entry.title)}
                           >
-                            🗑️
+                            <Trash2 size={18} />
                           </button>
                         )}
                       </div>
                     </div>
                     <p className={styles.entryDate}>{entry.date}</p>
-                    <p className={styles.entryDescription}>{entry.description}</p>
-                    
+                    <p className={styles.entryDescription}>
+                      {entry.description}
+                    </p>
+
                     {/* Image si elle existe */}
                     {entry.imageUrl && (
                       <div className={styles.entryImage}>
                         <img src={entry.imageUrl} alt={entry.title} />
                       </div>
                     )}
-                    
+
                     <div className={styles.entrySkills}>
                       {entry.skills?.map((skill) => (
                         <Tag key={skill}>{skill}</Tag>
@@ -180,7 +183,7 @@ function Journal({ setCurrentPage }) {
         cancelText="Annuler"
       />
     </div>
-  )
+  );
 }
 
-export default Journal
+export default Journal;
