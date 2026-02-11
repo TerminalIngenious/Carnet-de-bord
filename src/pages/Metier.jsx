@@ -1,6 +1,7 @@
 import styles from "./Metier.module.css";
 import Tag from "../components/Tag";
 import Card from "../components/Card";
+import { Briefcase, Coins, GraduationCap, UserCircle } from "lucide-react";
 
 function Metier() {
   const metier = {
@@ -60,9 +61,15 @@ function Metier() {
         <div className={styles.header}>
           <h1 className={styles.title}>{metier.title}</h1>
           <div className={styles.tags}>
-            <Tag>💼 {metier.contractType}</Tag>
-            <Tag>💰 {metier.salary}</Tag>
-            <Tag>🎓 {metier.education}</Tag>
+            <Tag>
+              <Briefcase size={14} /> {metier.contractType}
+            </Tag>
+            <Tag>
+              <Coins size={14} /> {metier.salary}
+            </Tag>
+            <Tag>
+              <GraduationCap size={14} /> {metier.education}
+            </Tag>
           </div>
         </div>
         <section className={styles.section}>
@@ -109,7 +116,9 @@ function Metier() {
           <h2 className={styles.sectionTitle}>Interviews</h2>
           <Card>
             <div className={styles.interviewHeader}>
-              <div className={styles.interviewAvatar}>👨‍💼</div>
+              <div className={styles.interviewAvatar}>
+                <UserCircle size={40} color="#3b82f6" />
+              </div>
               <div className={styles.interviewInfo}>
                 <div className={styles.interviewName}>
                   {metier.interview.name}

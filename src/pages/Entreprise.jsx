@@ -1,6 +1,16 @@
-import styles from './Entreprise.module.css'
-import Tag from '../components/Tag'
-import Card from '../components/Card'
+import styles from "./Entreprise.module.css";
+import Tag from "../components/Tag";
+import Card from "../components/Card";
+import {
+  Building2,
+  MapPin,
+  Users,
+  CalendarDays,
+  Globe,
+  Smartphone,
+  Cloud,
+  Wrench,
+} from "lucide-react";
 
 function Entreprise() {
   // Données de l'entreprise
@@ -10,14 +20,31 @@ function Entreprise() {
     location: "Castres, Occitanie",
     employees: "15 employés",
     founded: "2015",
-    description: "Caplaser est une entreprise spécialisée dans le développement de solutions numériques sur mesure. Depuis sa création en 2015, l'entreprise accompagne les PME et grands comptes dans leur transformation digitale. L'équipe, composée de développeurs passionnés, travaille avec les technologies les plus récentes pour créer des applications web et mobiles performantes.",
+    description:
+      "Caplaser est une entreprise spécialisée dans le développement de solutions numériques sur mesure. Depuis sa création en 2015, l'entreprise accompagne les PME et grands comptes dans leur transformation digitale. L'équipe, composée de développeurs passionnés, travaille avec les technologies les plus récentes pour créer des applications web et mobiles performantes.",
     services: [
-      { icon: "🌐", title: "Développement Web", description: "Sites vitrines, e-commerce, applications web sur mesure" },
-      { icon: "📱", title: "Applications Mobiles", description: "iOS, Android, React Native, Flutter" },
-      { icon: "☁️", title: "Solutions Cloud", description: "Infrastructure, hébergement, DevOps" },
-      { icon: "🔧", title: "Maintenance", description: "Support, évolutions, mises à jour" }
-    ]
-  }
+      {
+        icon: "globe",
+        title: "Développement Web",
+        description: "Sites vitrines, e-commerce, applications web sur mesure",
+      },
+      {
+        icon: "smartphone",
+        title: "Applications Mobiles",
+        description: "iOS, Android, React Native, Flutter",
+      },
+      {
+        icon: "cloud",
+        title: "Solutions Cloud",
+        description: "Infrastructure, hébergement, DevOps",
+      },
+      {
+        icon: "wrench",
+        title: "Maintenance",
+        description: "Support, évolutions, mises à jour",
+      },
+    ],
+  };
 
   return (
     <div className={styles.page}>
@@ -25,14 +52,22 @@ function Entreprise() {
         {/* Header */}
         <Card>
           <div className={styles.header}>
-            <div className={styles.logo}>🏢</div>
+            <div className={styles.logo}>
+              <Building2 size={48} color="#3b82f6" />
+            </div>
             <div className={styles.headerInfo}>
               <h1 className={styles.name}>{entreprise.name}</h1>
               <p className={styles.slogan}>{entreprise.slogan}</p>
               <div className={styles.tags}>
-                <Tag>📍 {entreprise.location}</Tag>
-                <Tag>👥 {entreprise.employees}</Tag>
-                <Tag>📅 Fondée en {entreprise.founded}</Tag>
+                <Tag>
+                  <MapPin size={14} /> {entreprise.location}
+                </Tag>
+                <Tag>
+                  <Users size={14} /> {entreprise.employees}
+                </Tag>
+                <Tag>
+                  <CalendarDays size={14} /> Fondée en {entreprise.founded}
+                </Tag>
               </div>
             </div>
           </div>
@@ -50,18 +85,29 @@ function Entreprise() {
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Activités & Services</h2>
           <div className={styles.servicesGrid}>
-            {entreprise.services.map((service, index) => (
-              <Card key={index}>
-                <div className={styles.serviceIcon}>{service.icon}</div>
-                <h3 className={styles.serviceTitle}>{service.title}</h3>
-                <p className={styles.serviceDesc}>{service.description}</p>
-              </Card>
-            ))}
+            {entreprise.services.map((service, index) => {
+              const IconComponent = {
+                globe: Globe,
+                smartphone: Smartphone,
+                cloud: Cloud,
+                wrench: Wrench,
+              }[service.icon];
+
+              return (
+                <Card key={index}>
+                  <div className={styles.serviceIcon}>
+                    <IconComponent size={32} color="#3b82f6" />
+                  </div>
+                  <h3 className={styles.serviceTitle}>{service.title}</h3>
+                  <p className={styles.serviceDesc}>{service.description}</p>
+                </Card>
+              );
+            })}
           </div>
         </section>
       </div>
     </div>
-  )
+  );
 }
 
-export default Entreprise
+export default Entreprise;
