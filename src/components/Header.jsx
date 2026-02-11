@@ -1,5 +1,5 @@
 import { useState } from 'react'
-
+import { BookOpen } from 'lucide-react'
 import styles from './Header.module.css'
 
 function Header({ currentPage, setCurrentPage }) {
@@ -12,7 +12,10 @@ function Header({ currentPage, setCurrentPage }) {
 
   return (
     <header className={styles.header}>
-      <div className={styles.logo}>Carnet de Stage</div>
+      <div className={styles.logo}>
+        <BookOpen size={24}/>
+        <span>Carnet de Stage</span>
+      </div>
 
       {/* Bouton burger - visible seulement sur mobile */}
       <button
