@@ -13,7 +13,6 @@ function Header({ currentPage, setCurrentPage }) {
   return (
     <header className={styles.header}>
       <div className={styles.logo}>
-        <BookOpen size={24}/>
         <span>Carnet de Stage</span>
       </div>
 
