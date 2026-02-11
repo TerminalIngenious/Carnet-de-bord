@@ -105,6 +105,13 @@
   border-radius: 12px;
   padding: 24px;
   text-align: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.statCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.12);
 }
 
 .statIcon {
@@ -153,12 +160,14 @@
   border-radius: 12px;
   padding: 24px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .exploreCard:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.15);
   border-color: var(--primary);
+  transform: translateY(-3px);
 }
 
 .exploreIcon {
