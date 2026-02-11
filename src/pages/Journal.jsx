@@ -10,14 +10,13 @@ function Journal({ setCurrentPage }) {
   const { isAuthenticated } = useAuth()
   const [entries, setEntries] = useState([])
   const [loading, setLoading] = useState(true)
-
-
-  // Etats pour le modal
+  
+  // États pour le modal
   const [modalOpen, setModalOpen] = useState(false)
   const [modalConfig, setModalConfig] = useState({
-    title:'',
-    message:'',
-    type:'confirm',
+    title: '',
+    message: '',
+    type: 'confirm',
     onConfirm: () => {}
   })
 
@@ -36,7 +35,7 @@ function Journal({ setCurrentPage }) {
     fetchEntries()
   }, [])
 
-  //Fonction pour afficher la modal
+  // Fonction pour afficher un modal
   const showModal = (config) => {
     setModalConfig(config)
     setModalOpen(true)
@@ -45,7 +44,7 @@ function Journal({ setCurrentPage }) {
   // Fonction de suppression
   const handleDelete = (id, title) => {
     showModal({
-      title:'Supprimer cette entrée ?',
+      title: 'Supprimer cette entrée ?',
       message: `Tu vas supprimer "${title}". Cette action est irréversible.`,
       type: 'confirm',
       onConfirm: async () => {
@@ -53,19 +52,19 @@ function Journal({ setCurrentPage }) {
           await deleteEntry(id)
           setEntries(entries.filter(entry => entry.id !== id))
           setModalOpen(false)
-
-          //Affiche un modal de succès
+          
+          // Affiche un modal de succès
           showModal({
             title: 'Entrée supprimée',
             message: 'L\'entrée a été supprimée avec succès.',
             type: 'success',
             onConfirm: () => setModalOpen(false)
           })
-        } catch(error) {
+        } catch (error) {
           setModalOpen(false)
           showModal({
-            title:'Erreur',
-            message: 'Une erreur est survenue lors de la suppression.' + error,
+            title: 'Erreur',
+            message: 'Une erreur est survenue lors de la suppression.',
             type: 'error',
             onConfirm: () => setModalOpen(false)
           })
@@ -148,11 +147,14 @@ function Journal({ setCurrentPage }) {
                     </div>
                     <p className={styles.entryDate}>{entry.date}</p>
                     <p className={styles.entryDescription}>{entry.description}</p>
+                    
+                    {/* Image si elle existe */}
                     {entry.imageUrl && (
                       <div className={styles.entryImage}>
                         <img src={entry.imageUrl} alt={entry.title} />
                       </div>
                     )}
+                    
                     <div className={styles.entrySkills}>
                       {entry.skills?.map((skill) => (
                         <Tag key={skill}>{skill}</Tag>
@@ -165,6 +167,8 @@ function Journal({ setCurrentPage }) {
           </div>
         )}
       </div>
+
+      {/* Modal */}
       <Modal
         isOpen={modalOpen}
         title={modalConfig.title}
