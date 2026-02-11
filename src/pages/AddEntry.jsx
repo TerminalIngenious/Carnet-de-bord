@@ -1,21 +1,30 @@
-import { useState } from 'react'
-import { useAuth } from '../context/AuthContext'
-import { addEntry } from '../services/entries'
-import styles from './AddEntry.module.css'
+import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { addEntry } from "../services/entries";
+import styles from "./AddEntry.module.css";
+import Modal from "../components/Modal";
 
 function AddEntry({ setCurrentPage }) {
-  const { isAuthenticated } = useAuth()
-  
-  const [loading, setLoading] = useState(false)
+  const { isAuthenticated } = useAuth();
+
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    day: '',
-    date: '',
-    title: '',
-    description: '',
+    day: "",
+    date: "",
+    title: "",
+    description: "",
     duration: 7,
-    skills: '',
-    imageUrl: ''
-  })
+    skills: "",
+    imageUrl: "",
+  });
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalConfig, setModalConfig] = useState({
+    title: "",
+    message: "",
+    type: "success",
+    onConfirm: () => {},
+  });
 
   // Redirige si non connecté
   if (!isAuthenticated) {
@@ -24,35 +33,35 @@ function AddEntry({ setCurrentPage }) {
         <div className={styles.notAllowed}>
           <h2>🔒 Accès refusé</h2>
           <p>Tu dois être connecté pour ajouter une entrée.</p>
-          <button 
+          <button
             className={styles.button}
-            onClick={() => setCurrentPage('login')}
+            onClick={() => setCurrentPage("login")}
           >
             Se connecter
           </button>
         </div>
       </div>
-    )
+    );
   }
 
   const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData(prev => ({
+    const { name, value } = e.target;
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
-    }))
-  }
+      [name]: value,
+    }));
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setLoading(true)
+    e.preventDefault();
+    setLoading(true);
 
     try {
       // Transforme les skills en tableau
       const skillsArray = formData.skills
-        .split(',')
-        .map(skill => skill.trim())
-        .filter(skill => skill !== '')
+        .split(",")
+        .map((skill) => skill.trim())
+        .filter((skill) => skill !== "");
 
       await addEntry({
         day: parseInt(formData.day),
@@ -61,23 +70,34 @@ function AddEntry({ setCurrentPage }) {
         description: formData.description,
         duration: parseInt(formData.duration),
         skills: skillsArray,
-        imageUrl: formData.imageUrl || null 
-      })
+        imageUrl: formData.imageUrl || null,
+      });
 
-      alert('Entrée ajoutée avec succès !')
-      setCurrentPage('journal')
+      setModalConfig({
+        title: "Entrée ajoutée !",
+        message: "Ton entrée a été enregistrée avec succès.",
+        type: "success",
+        onConfirm: () => setCurrentPage("journal"),
+      });
+      setModalOpen(true);
     } catch (error) {
-      alert('Erreur: ' + error.message)
+      setModalConfig({
+        title: "Erreur",
+        message: "Une erreur est survenue : " + error.message,
+        type: "error",
+        onConfirm: () => setModalOpen(false),
+      });
+      setModalOpen(true);
     }
 
-    setLoading(false)
-  }
+    setLoading(false);
+  };
 
   return (
     <div className={styles.page}>
       <div className={styles.container}>
         <h1 className={styles.title}>Ajouter une entrée</h1>
-        
+
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.row}>
             <div className={styles.field}>
@@ -93,7 +113,7 @@ function AddEntry({ setCurrentPage }) {
                 required
               />
             </div>
-            
+
             <div className={styles.field}>
               <label className={styles.label}>Date</label>
               <input
@@ -148,7 +168,9 @@ function AddEntry({ setCurrentPage }) {
           </div>
 
           <div className={styles.field}>
-            <label className={styles.label}>Compétences (séparées par des virgules)</label>
+            <label className={styles.label}>
+              Compétences (séparées par des virgules)
+            </label>
             <input
               type="text"
               name="skills"
@@ -161,39 +183,49 @@ function AddEntry({ setCurrentPage }) {
 
           <div className={styles.field}>
             <label className={styles.label}>URL de l'image (optionnel)</label>
-            <input 
-            type="url" 
-            name="imageUrl"
-            className={styles.input}
-            value={formData.imageUrl}
-            onChange={handleChange}
-            placeholder="https://drive.google.com/uc?export=view&id=..."
+            <input
+              type="url"
+              name="imageUrl"
+              className={styles.input}
+              value={formData.imageUrl}
+              onChange={handleChange}
+              placeholder="https://drive.google.com/uc?export=view&id=..."
             />
             <small className={styles.hint}>
-              💡 Pour Google Drive : transforme le lien en https://drive.google.com/uc?export=view&id=TON_ID
+              💡 Pour Google Drive : transforme le lien en
+              https://drive.google.com/uc?export=view&id=TON_ID
             </small>
           </div>
 
           <div className={styles.actions}>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className={styles.buttonPrimary}
               disabled={loading}
             >
-              {loading ? 'Enregistrement...' : '💾 Enregistrer'}
+              {loading ? "Enregistrement..." : "💾 Enregistrer"}
             </button>
-            <button 
-              type="button" 
+            <button
+              type="button"
               className={styles.buttonSecondary}
-              onClick={() => setCurrentPage('journal')}
+              onClick={() => setCurrentPage("journal")}
             >
               Annuler
             </button>
           </div>
         </form>
       </div>
+      {/* Modal */}
+      <Modal
+        isOpen={modalOpen}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        type={modalConfig.type}
+        onConfirm={modalConfig.onConfirm}
+        onCancel={() => setModalOpen(false)}
+      />
     </div>
-  )
+  );
 }
 
-export default AddEntry
+export default AddEntry;
