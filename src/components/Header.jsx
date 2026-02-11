@@ -1,19 +1,13 @@
 import { useState } from 'react'
-import { useAuth } from '../context/AuthContext'
+
 import styles from './Header.module.css'
 
 function Header({ currentPage, setCurrentPage }) {
   const [menuOpen, setMenuOpen] = useState(false)
-  const { logout, isAuthenticated } = useAuth()
 
   const handleNavClick = (page) => {
     setCurrentPage(page)
     setMenuOpen(false)
-  }
-
-  const handleLogout = async () => {
-    await logout()
-    setCurrentPage('home')
   }
 
   return (
@@ -62,19 +56,7 @@ function Header({ currentPage, setCurrentPage }) {
           Métier
         </a>
 
-        {/* Bouton Connexion / Déconnexion */}
-        {isAuthenticated ? (
-          <button className={styles.authButton} onClick={handleLogout}>
-            Déconnexion
-          </button>
-        ) : (
-          <button 
-            className={styles.authButton} 
-            onClick={() => handleNavClick('login')}
-          >
-            Se connecter
-          </button>
-        )}
+        
       </nav>
     </header>
   )

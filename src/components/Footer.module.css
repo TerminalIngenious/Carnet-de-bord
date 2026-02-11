@@ -1,8 +1,31 @@
-.footer{
-    text-align: center;
-    padding: 20px;
-    background-color: var(--background);
-    color: var(--text-gray);
+.footer {
+  text-align: center;
+  padding: 20px;
+  background-color: var(--white);
+  border-top: 1px solid var(--border);
+  color: var(--text-gray);
+}
+
+.text {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.authLink {
+  background: none;
+  border: none;
+  color: var(--text-gray);
+  font-size: 12px;
+  cursor: pointer;
+  margin-top: 8px;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.authLink:hover {
+  opacity: 1;
+  color: var(--primary);
 }
 
 .p{

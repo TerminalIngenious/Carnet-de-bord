@@ -22,7 +22,7 @@ const [currentPage, setCurrentPage] = useState('home');
         {currentPage === 'login' && <Login setCurrentPage={setCurrentPage} />}
         {currentPage === 'addEntry' && <AddEntry setCurrentPage={setCurrentPage} />}
       </main>
-      <Footer nom="Mattéo" annee={2026}/>
+      <Footer nom="Mattéo" annee={2026} setCurrentPage={setCurrentPage}/>
     </div>
   )
 }
