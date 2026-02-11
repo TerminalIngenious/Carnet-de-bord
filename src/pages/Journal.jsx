@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import styles from "./Journal.module.css"
 import Tag from "../components/Tag"
 import Card from '../components/Card'
+import Modal from '../components/Modal'
 import { useAuth } from '../context/AuthContext'
 import { getEntries, deleteEntry } from '../services/entries'
 
@@ -9,6 +10,16 @@ function Journal({ setCurrentPage }) {
   const { isAuthenticated } = useAuth()
   const [entries, setEntries] = useState([])
   const [loading, setLoading] = useState(true)
+
+
+  // Etats pour le modal
+  const [modalOpen, setModalOpen] = useState(false)
+  const [modalConfig, setModalConfig] = useState({
+    title:'',
+    message:'',
+    type:'confirm',
+    onConfirm: () => {}
+  })
 
   // Récupère les entrées au chargement de la page
   useEffect(() => {
@@ -25,19 +36,42 @@ function Journal({ setCurrentPage }) {
     fetchEntries()
   }, [])
 
+  //Fonction pour afficher la modal
+  const showModal = (config) => {
+    setModalConfig(config)
+    setModalOpen(true)
+  }
+
   // Fonction de suppression
-  const handleDelete = async (id, title) => {
-    const confirmed = window.confirm(`Supprimer l'entrée "${title}" ?`)
-    
-    if (confirmed) {
-      try {
-        await deleteEntry(id)
-        // Met à jour la liste localement (sans recharger depuis Firebase)
-        setEntries(entries.filter(entry => entry.id !== id))
-      } catch (error) {
-        alert('Erreur lors de la suppression: ' + error.message)
+  const handleDelete = (id, title) => {
+    showModal({
+      title:'Supprimer cette entrée ?',
+      message: `Tu vas supprimer "${title}". Cette action est irréversible.`,
+      type: 'confirm',
+      onConfirm: async () => {
+        try {
+          await deleteEntry(id)
+          setEntries(entries.filter(entry => entry.id !== id))
+          setModalOpen(false)
+
+          //Affiche un modal de succès
+          showModal({
+            title: 'Entrée supprimée',
+            message: 'L\'entrée a été supprimée avec succès.',
+            type: 'success',
+            onConfirm: () => setModalOpen(false)
+          })
+        } catch(error) {
+          setModalOpen(false)
+          showModal({
+            title:'Erreur',
+            message: 'Une erreur est survenue lors de la suppression.' + error,
+            type: 'error',
+            onConfirm: () => setModalOpen(false)
+          })
+        }
       }
-    }
+    })
   }
 
   return (
@@ -131,6 +165,16 @@ function Journal({ setCurrentPage }) {
           </div>
         )}
       </div>
+      <Modal
+        isOpen={modalOpen}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        type={modalConfig.type}
+        onConfirm={modalConfig.onConfirm}
+        onCancel={() => setModalOpen(false)}
+        confirmText="Supprimer"
+        cancelText="Annuler"
+      />
     </div>
   )
 }
