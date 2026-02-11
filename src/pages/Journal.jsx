@@ -64,7 +64,7 @@ function Journal({ setCurrentPage }) {
           setModalOpen(false)
           showModal({
             title: 'Erreur',
-            message: 'Une erreur est survenue lors de la suppression.',
+            message: 'Une erreur est survenue lors de la suppression. '+ error,
             type: 'error',
             onConfirm: () => setModalOpen(false)
           })
