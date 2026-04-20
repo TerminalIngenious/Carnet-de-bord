@@ -134,7 +134,7 @@ function Journal({ setCurrentPage }) {
                       <h3 className={styles.entryTitle}>{entry.title}</h3>
                       <div className={styles.entryActions}>
                         <span className={styles.entryDuration}>
-                          ⏱️ {entry.duration}h
+                          {entry.duration}h
                         </span>
                         {isAuthenticated && (
                           <button
