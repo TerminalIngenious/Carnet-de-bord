@@ -186,7 +186,7 @@ function Home({ setCurrentPage }) {
                 <div className={styles.entryDay}>J{entry.day}</div>
                 <div className={styles.entryInfo}>
                   <h4 className={styles.entryTitle}>{entry.title}</h4>
-                  <p className={styles.entryDate}>{entry.date}6</p>
+                  <p className={styles.entryDate}>{entry.date}</p>
                 </div>
               </div>
             ))}

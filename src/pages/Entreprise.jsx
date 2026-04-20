@@ -103,7 +103,8 @@ function Entreprise() {
                 </Card>
               );
             })}
-          </div>
+          </div
+          >
         </section>
       </div>
     </div>
