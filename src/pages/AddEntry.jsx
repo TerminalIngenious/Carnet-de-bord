@@ -3,11 +3,14 @@ import { useAuth } from "../context/AuthContext";
 import { addEntry } from "../services/entries";
 import styles from "./AddEntry.module.css";
 import Modal from "../components/Modal";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 function AddEntry({ setCurrentPage }) {
   const { isAuthenticated } = useAuth();
 
   const [loading, setLoading] = useState(false);
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const [formData, setFormData] = useState({
     day: "",
     date: "",
@@ -15,7 +18,6 @@ function AddEntry({ setCurrentPage }) {
     description: "",
     duration: 7,
     skills: "",
-    imageUrl: "",
   });
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -52,11 +54,34 @@ function AddEntry({ setCurrentPage }) {
     }));
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      // Prévisualisation
+      const reader = new FileReader();
+      reader.onloadend = () => setImagePreview(reader.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      // Upload de l'image si présente
+      let imageUrl = null;
+      if (imageFile) {
+        const storage = getStorage();
+        const storageRef = ref(
+          storage,
+          `entries/${Date.now()}_${imageFile.name}`
+        );
+        await uploadBytes(storageRef, imageFile);
+        imageUrl = await getDownloadURL(storageRef);
+      }
+
       // Transforme les skills en tableau
       const skillsArray = formData.skills
         .split(",")
@@ -70,7 +95,7 @@ function AddEntry({ setCurrentPage }) {
         description: formData.description,
         duration: parseInt(formData.duration),
         skills: skillsArray,
-        imageUrl: formData.imageUrl || null,
+        imageUrl: imageUrl,
       });
 
       setModalConfig({
@@ -182,19 +207,28 @@ function AddEntry({ setCurrentPage }) {
           </div>
 
           <div className={styles.field}>
-            <label className={styles.label}>URL de l'image (optionnel)</label>
+            <label className={styles.label}>Photo (optionnel)</label>
             <input
-              type="url"
-              name="imageUrl"
+              type="file"
+              accept="image/*"
               className={styles.input}
-              value={formData.imageUrl}
-              onChange={handleChange}
-              placeholder="https://drive.google.com/uc?export=view&id=..."
+              onChange={handleImageChange}
             />
-            <small className={styles.hint}>
-              💡 Pour Google Drive : transforme le lien en
-              https://drive.google.com/uc?export=view&id=TON_ID
-            </small>
+            {imagePreview && (
+              <div className={styles.imagePreview}>
+                <img src={imagePreview} alt="Prévisualisation" />
+                <button
+                  type="button"
+                  className={styles.removeImage}
+                  onClick={() => {
+                    setImageFile(null);
+                    setImagePreview(null);
+                  }}
+                >
+                  ✕ Supprimer
+                </button>
+              </div>
+            )}
           </div>
 
           <div className={styles.actions}>
@@ -215,6 +249,7 @@ function AddEntry({ setCurrentPage }) {
           </div>
         </form>
       </div>
+
       {/* Modal */}
       <Modal
         isOpen={modalOpen}
