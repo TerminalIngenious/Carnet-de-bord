@@ -145,7 +145,7 @@ function WeekRecap({ weekNumber, entries, isAuthenticated }) {
           {/* Récap textuel */}
           <div className={styles.weekTextRecap}>
             <div className={styles.weekTextRecapHeader}>
-              <p className={styles.weekSkillsTitle}>📝 Récap de la semaine</p>
+              <p className={styles.weekSkillsTitle}>Récap de la semaine</p>
               {isAuthenticated && !editing && (
                 <button className={styles.editRecapBtn} onClick={() => setEditing(true)}>
                   <Pencil size={14} />
@@ -281,13 +281,13 @@ function Journal({ setCurrentPage }) {
                 className={`${styles.tab} ${view === "journal" ? styles.tabActive : ""}`}
                 onClick={() => setView("journal")}
               >
-                📋 Entrées
+                Entrées
               </button>
               <button
                 className={`${styles.tab} ${view === "recap" ? styles.tabActive : ""}`}
                 onClick={() => setView("recap")}
               >
-                📊 Récap hebdo
+                Récap hebdo
               </button>
             </div>
           )}
@@ -297,7 +297,7 @@ function Journal({ setCurrentPage }) {
 
         {!loading && entries.length === 0 && (
           <div className={styles.empty}>
-            <p>📝 Aucune entrée pour le moment.</p>
+            <p>Aucune entrée pour le moment.</p>
             {isAuthenticated && (
               <button className={styles.addButton} onClick={() => setCurrentPage("addEntry")}>
                 Ajouter ma première entrée
