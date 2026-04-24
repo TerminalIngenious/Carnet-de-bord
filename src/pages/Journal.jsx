@@ -5,9 +5,10 @@ import Card from "../components/Card";
 import Modal from "../components/Modal";
 import { useAuth } from "../context/AuthContext";
 import { getEntries, deleteEntry } from "../services/entries";
-import { Trash2, ChevronDown, ChevronUp, Clock, Zap, BookOpen } from "lucide-react";
+import { getWeekRecap, saveWeekRecap } from "../services/weekRecaps";
+import { Trash2, ChevronDown, ChevronUp, Clock, Zap, BookOpen, Pencil, Check, X } from "lucide-react";
 
-// Calcule le numéro de semaine de stage à partir de la date de début (20 avril 2026)
+// Calcule le numéro de semaine de stage à partir du 20 avril 2026
 const getWeekNumber = (dateStr) => {
   const stageStart = new Date("2026-04-20");
   const entryDate = new Date(dateStr);
@@ -32,17 +33,46 @@ const getWeekDates = (weekNumber) => {
   const weekStart = new Date(stageStart);
   weekStart.setDate(stageStart.getDate() + (weekNumber - 1) * 7);
   const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekStart.getDate() + 4); // vendredi
+  weekEnd.setDate(weekStart.getDate() + 4);
   const fmt = (d) => d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
   return `${fmt(weekStart)} – ${fmt(weekEnd)}`;
 };
 
-function WeekRecap({ weekNumber, entries }) {
+function WeekRecap({ weekNumber, entries, isAuthenticated }) {
   const [open, setOpen] = useState(false);
+  const [recap, setRecap] = useState(null);
+  const [editing, setEditing] = useState(false);
+  const [editText, setEditText] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const totalHours = entries.reduce((sum, e) => sum + (e.duration || 0), 0);
   const allSkills = [...new Set(entries.flatMap((e) => e.skills || []))];
   const weekDates = getWeekDates(weekNumber);
+
+  useEffect(() => {
+    if (!open) return;
+    getWeekRecap(weekNumber).then((data) => {
+      setRecap(data);
+      setEditText(data?.text || "");
+    });
+  }, [open, weekNumber]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await saveWeekRecap(weekNumber, editText);
+      setRecap({ text: editText });
+      setEditing(false);
+    } catch (e) {
+      console.error(e);
+    }
+    setSaving(false);
+  };
+
+  const handleCancel = () => {
+    setEditText(recap?.text || "");
+    setEditing(false);
+  };
 
   return (
     <div className={styles.weekRecap}>
@@ -55,18 +85,16 @@ function WeekRecap({ weekNumber, entries }) {
           </div>
         </div>
         <div className={styles.weekRecapMeta}>
-          <span className={styles.weekStat}>
-            <Clock size={14} /> {totalHours}h
-          </span>
-          <span className={styles.weekStat}>
-            <BookOpen size={14} /> {entries.length} jour{entries.length > 1 ? "s" : ""}
-          </span>
+          <span className={styles.weekStat}><Clock size={14} /> {totalHours}h</span>
+          <span className={styles.weekStat}><BookOpen size={14} /> {entries.length} jour{entries.length > 1 ? "s" : ""}</span>
           {open ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
         </div>
       </button>
 
       {open && (
         <div className={styles.weekRecapBody}>
+
+          {/* Stats */}
           <div className={styles.weekStats}>
             <div className={styles.weekStatCard}>
               <Clock size={20} color="#3b82f6" />
@@ -85,6 +113,7 @@ function WeekRecap({ weekNumber, entries }) {
             </div>
           </div>
 
+          {/* Compétences */}
           {allSkills.length > 0 && (
             <div className={styles.weekSkills}>
               <p className={styles.weekSkillsTitle}>Compétences de la semaine</p>
@@ -96,6 +125,7 @@ function WeekRecap({ weekNumber, entries }) {
             </div>
           )}
 
+          {/* Résumé journées */}
           <div className={styles.weekDaysList}>
             <p className={styles.weekSkillsTitle}>Résumé des journées</p>
             {entries
@@ -104,13 +134,61 @@ function WeekRecap({ weekNumber, entries }) {
               .map((entry) => (
                 <div key={entry.id} className={styles.weekDayItem}>
                   <span className={styles.weekDayBadge}>J{entry.day}</span>
-                  <div>
+                  <div style={{ flex: 1 }}>
                     <span className={styles.weekDayTitle}>{entry.title}</span>
-                    <span className={styles.weekDayDuration}>{entry.duration}h</span>
                   </div>
+                  <span className={styles.weekDayDuration}>{entry.duration}h</span>
                 </div>
               ))}
           </div>
+
+          {/* Récap textuel */}
+          <div className={styles.weekTextRecap}>
+            <div className={styles.weekTextRecapHeader}>
+              <p className={styles.weekSkillsTitle}>📝 Récap de la semaine</p>
+              {isAuthenticated && !editing && (
+                <button className={styles.editRecapBtn} onClick={() => setEditing(true)}>
+                  <Pencil size={14} />
+                  {recap?.text ? "Modifier" : "Rédiger"}
+                </button>
+              )}
+            </div>
+
+            {editing ? (
+              <div className={styles.editRecapArea}>
+                <textarea
+                  className={styles.recapTextarea}
+                  value={editText}
+                  onChange={(e) => setEditText(e.target.value)}
+                  placeholder="Résume ici ta semaine pour ta prof..."
+                  rows={6}
+                />
+                <div className={styles.editRecapActions}>
+                  <button className={styles.saveRecapBtn} onClick={handleSave} disabled={saving}>
+                    <Check size={14} />
+                    {saving ? "Sauvegarde..." : "Sauvegarder"}
+                  </button>
+                  <button className={styles.cancelRecapBtn} onClick={handleCancel}>
+                    <X size={14} />
+                    Annuler
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className={styles.recapTextDisplay}>
+                {recap?.text ? (
+                  <p>{recap.text}</p>
+                ) : (
+                  <p className={styles.recapEmpty}>
+                    {isAuthenticated
+                      ? "Aucun récap rédigé pour cette semaine."
+                      : "Le récap de cette semaine n'a pas encore été rédigé."}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
         </div>
       )}
     </div>
@@ -121,7 +199,7 @@ function Journal({ setCurrentPage }) {
   const { isAuthenticated } = useAuth();
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState("journal"); // "journal" | "recap"
+  const [view, setView] = useState("journal");
 
   const [modalOpen, setModalOpen] = useState(false);
   const [modalConfig, setModalConfig] = useState({
@@ -179,33 +257,24 @@ function Journal({ setCurrentPage }) {
   };
 
   const weekGroups = groupByWeek(entries);
-  const sortedWeeks = Object.keys(weekGroups)
-    .map(Number)
-    .sort((a, b) => b - a); // semaines les plus récentes en premier
+  const sortedWeeks = Object.keys(weekGroups).map(Number).sort((a, b) => b - a);
 
   return (
     <div className={styles.page}>
       <div className={styles.container}>
-        {/* Header */}
         <div className={styles.header}>
           <div className={styles.headerTop}>
             <div>
               <h1 className={styles.title}>Journal de stage</h1>
-              <p className={styles.subtitle}>
-                Suivi quotidien de mes activités chez Caplaser
-              </p>
+              <p className={styles.subtitle}>Suivi quotidien de mes activités chez Caplaser</p>
             </div>
             {isAuthenticated && (
-              <button
-                className={styles.addButton}
-                onClick={() => setCurrentPage("addEntry")}
-              >
+              <button className={styles.addButton} onClick={() => setCurrentPage("addEntry")}>
                 + Ajouter une entrée
               </button>
             )}
           </div>
 
-          {/* Tabs */}
           {!loading && entries.length > 0 && (
             <div className={styles.tabs}>
               <button
@@ -224,22 +293,13 @@ function Journal({ setCurrentPage }) {
           )}
         </div>
 
-        {/* Chargement */}
-        {loading && (
-          <div className={styles.loading}>
-            <p>Chargement des entrées...</p>
-          </div>
-        )}
+        {loading && <div className={styles.loading}><p>Chargement des entrées...</p></div>}
 
-        {/* Vide */}
         {!loading && entries.length === 0 && (
           <div className={styles.empty}>
             <p>📝 Aucune entrée pour le moment.</p>
             {isAuthenticated && (
-              <button
-                className={styles.addButton}
-                onClick={() => setCurrentPage("addEntry")}
-              >
+              <button className={styles.addButton} onClick={() => setCurrentPage("addEntry")}>
                 Ajouter ma première entrée
               </button>
             )}
@@ -259,14 +319,9 @@ function Journal({ setCurrentPage }) {
                     <div className={styles.entryHeader}>
                       <h3 className={styles.entryTitle}>{entry.title}</h3>
                       <div className={styles.entryActions}>
-                        <span className={styles.entryDuration}>
-                          {entry.duration}h
-                        </span>
+                        <span className={styles.entryDuration}>{entry.duration}h</span>
                         {isAuthenticated && (
-                          <button
-                            className={styles.deleteButton}
-                            onClick={() => handleDelete(entry.id, entry.title)}
-                          >
+                          <button className={styles.deleteButton} onClick={() => handleDelete(entry.id, entry.title)}>
                             <Trash2 size={18} />
                           </button>
                         )}
@@ -299,13 +354,13 @@ function Journal({ setCurrentPage }) {
                 key={week}
                 weekNumber={week}
                 entries={weekGroups[week]}
+                isAuthenticated={isAuthenticated}
               />
             ))}
           </div>
         )}
       </div>
 
-      {/* Modal */}
       <Modal
         isOpen={modalOpen}
         title={modalConfig.title}

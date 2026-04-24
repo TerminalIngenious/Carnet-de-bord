@@ -383,3 +383,130 @@ border-radius: 8px;
     gap: 10px;
   }
 }
+
+/* ─── Récap textuel ─────────────────────────────────── */
+.weekTextRecap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.weekTextRecapHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.editRecapBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--primary);
+  background: transparent;
+  color: var(--primary);
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.editRecapBtn:hover {
+  background: var(--primary);
+  color: white;
+}
+
+.editRecapArea {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.recapTextarea {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-dark);
+  font-size: 14px;
+  line-height: 1.6;
+  resize: vertical;
+  font-family: inherit;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.recapTextarea:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.editRecapActions {
+  display: flex;
+  gap: 10px;
+}
+
+.saveRecapBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.saveRecapBtn:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.saveRecapBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cancelRecapBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: transparent;
+  color: var(--text-gray);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelRecapBtn:hover {
+  border-color: var(--text-gray);
+}
+
+.recapTextDisplay {
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(59, 130, 246, 0.03);
+}
+
+.recapTextDisplay p {
+  font-size: 14px;
+  color: var(--text-dark);
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.recapEmpty {
+  color: var(--text-gray) !important;
+  font-style: italic;
+}
