@@ -5,14 +5,124 @@ import Card from "../components/Card";
 import Modal from "../components/Modal";
 import { useAuth } from "../context/AuthContext";
 import { getEntries, deleteEntry } from "../services/entries";
-import { Trash2 } from "lucide-react";
+import { Trash2, ChevronDown, ChevronUp, Clock, Zap, BookOpen } from "lucide-react";
+
+// Calcule le numéro de semaine de stage à partir de la date de début (20 avril 2026)
+const getWeekNumber = (dateStr) => {
+  const stageStart = new Date("2026-04-20");
+  const entryDate = new Date(dateStr);
+  const diffDays = Math.floor((entryDate - stageStart) / (1000 * 60 * 60 * 24));
+  return Math.floor(diffDays / 7) + 1;
+};
+
+// Groupe les entrées par semaine
+const groupByWeek = (entries) => {
+  const weeks = {};
+  entries.forEach((entry) => {
+    const week = getWeekNumber(entry.date);
+    if (!weeks[week]) weeks[week] = [];
+    weeks[week].push(entry);
+  });
+  return weeks;
+};
+
+// Calcule les dates de début et fin d'une semaine de stage
+const getWeekDates = (weekNumber) => {
+  const stageStart = new Date("2026-04-20");
+  const weekStart = new Date(stageStart);
+  weekStart.setDate(stageStart.getDate() + (weekNumber - 1) * 7);
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 4); // vendredi
+  const fmt = (d) => d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+  return `${fmt(weekStart)} – ${fmt(weekEnd)}`;
+};
+
+function WeekRecap({ weekNumber, entries }) {
+  const [open, setOpen] = useState(false);
+
+  const totalHours = entries.reduce((sum, e) => sum + (e.duration || 0), 0);
+  const allSkills = [...new Set(entries.flatMap((e) => e.skills || []))];
+  const weekDates = getWeekDates(weekNumber);
+
+  return (
+    <div className={styles.weekRecap}>
+      <button className={styles.weekRecapHeader} onClick={() => setOpen(!open)}>
+        <div className={styles.weekRecapLeft}>
+          <span className={styles.weekBadge}>S{weekNumber}</span>
+          <div>
+            <span className={styles.weekTitle}>Semaine {weekNumber}</span>
+            <span className={styles.weekDates}>{weekDates}</span>
+          </div>
+        </div>
+        <div className={styles.weekRecapMeta}>
+          <span className={styles.weekStat}>
+            <Clock size={14} /> {totalHours}h
+          </span>
+          <span className={styles.weekStat}>
+            <BookOpen size={14} /> {entries.length} jour{entries.length > 1 ? "s" : ""}
+          </span>
+          {open ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+        </div>
+      </button>
+
+      {open && (
+        <div className={styles.weekRecapBody}>
+          <div className={styles.weekStats}>
+            <div className={styles.weekStatCard}>
+              <Clock size={20} color="#3b82f6" />
+              <span className={styles.weekStatValue}>{totalHours}h</span>
+              <span className={styles.weekStatLabel}>Heures travaillées</span>
+            </div>
+            <div className={styles.weekStatCard}>
+              <BookOpen size={20} color="#3b82f6" />
+              <span className={styles.weekStatValue}>{entries.length}</span>
+              <span className={styles.weekStatLabel}>Jours renseignés</span>
+            </div>
+            <div className={styles.weekStatCard}>
+              <Zap size={20} color="#3b82f6" />
+              <span className={styles.weekStatValue}>{allSkills.length}</span>
+              <span className={styles.weekStatLabel}>Compétences utilisées</span>
+            </div>
+          </div>
+
+          {allSkills.length > 0 && (
+            <div className={styles.weekSkills}>
+              <p className={styles.weekSkillsTitle}>Compétences de la semaine</p>
+              <div className={styles.weekSkillsTags}>
+                {allSkills.map((skill) => (
+                  <Tag key={skill}>{skill}</Tag>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className={styles.weekDaysList}>
+            <p className={styles.weekSkillsTitle}>Résumé des journées</p>
+            {entries
+              .slice()
+              .sort((a, b) => a.day - b.day)
+              .map((entry) => (
+                <div key={entry.id} className={styles.weekDayItem}>
+                  <span className={styles.weekDayBadge}>J{entry.day}</span>
+                  <div>
+                    <span className={styles.weekDayTitle}>{entry.title}</span>
+                    <span className={styles.weekDayDuration}>{entry.duration}h</span>
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function Journal({ setCurrentPage }) {
   const { isAuthenticated } = useAuth();
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [view, setView] = useState("journal"); // "journal" | "recap"
 
-  // États pour le modal
   const [modalOpen, setModalOpen] = useState(false);
   const [modalConfig, setModalConfig] = useState({
     title: "",
@@ -21,7 +131,6 @@ function Journal({ setCurrentPage }) {
     onConfirm: () => {},
   });
 
-  // Récupère les entrées au chargement de la page
   useEffect(() => {
     const fetchEntries = async () => {
       try {
@@ -32,17 +141,14 @@ function Journal({ setCurrentPage }) {
       }
       setLoading(false);
     };
-
     fetchEntries();
   }, []);
 
-  // Fonction pour afficher un modal
   const showModal = (config) => {
     setModalConfig(config);
     setModalOpen(true);
   };
 
-  // Fonction de suppression
   const handleDelete = (id, title) => {
     showModal({
       title: "Supprimer cette entrée ?",
@@ -53,8 +159,6 @@ function Journal({ setCurrentPage }) {
           await deleteEntry(id);
           setEntries(entries.filter((entry) => entry.id !== id));
           setModalOpen(false);
-
-          // Affiche un modal de succès
           showModal({
             title: "Entrée supprimée",
             message: "L'entrée a été supprimée avec succès.",
@@ -74,6 +178,11 @@ function Journal({ setCurrentPage }) {
     });
   };
 
+  const weekGroups = groupByWeek(entries);
+  const sortedWeeks = Object.keys(weekGroups)
+    .map(Number)
+    .sort((a, b) => b - a); // semaines les plus récentes en premier
+
   return (
     <div className={styles.page}>
       <div className={styles.container}>
@@ -86,7 +195,6 @@ function Journal({ setCurrentPage }) {
                 Suivi quotidien de mes activités chez Caplaser
               </p>
             </div>
-
             {isAuthenticated && (
               <button
                 className={styles.addButton}
@@ -96,16 +204,34 @@ function Journal({ setCurrentPage }) {
               </button>
             )}
           </div>
+
+          {/* Tabs */}
+          {!loading && entries.length > 0 && (
+            <div className={styles.tabs}>
+              <button
+                className={`${styles.tab} ${view === "journal" ? styles.tabActive : ""}`}
+                onClick={() => setView("journal")}
+              >
+                📋 Entrées
+              </button>
+              <button
+                className={`${styles.tab} ${view === "recap" ? styles.tabActive : ""}`}
+                onClick={() => setView("recap")}
+              >
+                📊 Récap hebdo
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* État de chargement */}
+        {/* Chargement */}
         {loading && (
           <div className={styles.loading}>
             <p>Chargement des entrées...</p>
           </div>
         )}
 
-        {/* Liste vide */}
+        {/* Vide */}
         {!loading && entries.length === 0 && (
           <div className={styles.empty}>
             <p>📝 Aucune entrée pour le moment.</p>
@@ -120,8 +246,8 @@ function Journal({ setCurrentPage }) {
           </div>
         )}
 
-        {/* Liste des entrées */}
-        {!loading && entries.length > 0 && (
+        {/* Vue Journal */}
+        {!loading && entries.length > 0 && view === "journal" && (
           <div className={styles.entriesList}>
             {entries.map((entry) => (
               <Card key={entry.id}>
@@ -147,17 +273,12 @@ function Journal({ setCurrentPage }) {
                       </div>
                     </div>
                     <p className={styles.entryDate}>{entry.date}</p>
-                    <p className={styles.entryDescription}>
-                      {entry.description}
-                    </p>
-
-                    {/* Image si elle existe */}
+                    <p className={styles.entryDescription}>{entry.description}</p>
                     {entry.imageUrl && (
                       <div className={styles.entryImage}>
                         <img src={entry.imageUrl} alt={entry.title} />
                       </div>
                     )}
-
                     <div className={styles.entrySkills}>
                       {entry.skills?.map((skill) => (
                         <Tag key={skill}>{skill}</Tag>
@@ -166,6 +287,19 @@ function Journal({ setCurrentPage }) {
                   </div>
                 </div>
               </Card>
+            ))}
+          </div>
+        )}
+
+        {/* Vue Récap hebdo */}
+        {!loading && entries.length > 0 && view === "recap" && (
+          <div className={styles.recapList}>
+            {sortedWeeks.map((week) => (
+              <WeekRecap
+                key={week}
+                weekNumber={week}
+                entries={weekGroups[week]}
+              />
             ))}
           </div>
         )}
