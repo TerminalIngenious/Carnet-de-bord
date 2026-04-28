@@ -6,7 +6,17 @@ import Modal from "../components/Modal";
 import { useAuth } from "../context/AuthContext";
 import { getEntries, deleteEntry } from "../services/entries";
 import { getWeekRecap, saveWeekRecap } from "../services/weekRecaps";
-import { Trash2, ChevronDown, ChevronUp, Clock, Zap, BookOpen, Pencil, Check, X } from "lucide-react";
+import {
+  Trash2,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Zap,
+  BookOpen,
+  Pencil,
+  Check,
+  X,
+} from "lucide-react";
 
 // Calcule le numéro de semaine de stage à partir du 20 avril 2026
 const getWeekNumber = (dateStr) => {
@@ -34,7 +44,8 @@ const getWeekDates = (weekNumber) => {
   weekStart.setDate(stageStart.getDate() + (weekNumber - 1) * 7);
   const weekEnd = new Date(weekStart);
   weekEnd.setDate(weekStart.getDate() + 4);
-  const fmt = (d) => d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+  const fmt = (d) =>
+    d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
   return `${fmt(weekStart)} – ${fmt(weekEnd)}`;
 };
 
@@ -85,15 +96,19 @@ function WeekRecap({ weekNumber, entries, isAuthenticated }) {
           </div>
         </div>
         <div className={styles.weekRecapMeta}>
-          <span className={styles.weekStat}><Clock size={14} /> {totalHours}h</span>
-          <span className={styles.weekStat}><BookOpen size={14} /> {entries.length} jour{entries.length > 1 ? "s" : ""}</span>
+          <span className={styles.weekStat}>
+            <Clock size={14} /> {totalHours}h
+          </span>
+          <span className={styles.weekStat}>
+            <BookOpen size={14} /> {entries.length} jour
+            {entries.length > 1 ? "s" : ""}
+          </span>
           {open ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
         </div>
       </button>
 
       {open && (
         <div className={styles.weekRecapBody}>
-
           {/* Stats */}
           <div className={styles.weekStats}>
             <div className={styles.weekStatCard}>
@@ -109,14 +124,18 @@ function WeekRecap({ weekNumber, entries, isAuthenticated }) {
             <div className={styles.weekStatCard}>
               <Zap size={20} color="#3b82f6" />
               <span className={styles.weekStatValue}>{allSkills.length}</span>
-              <span className={styles.weekStatLabel}>Compétences utilisées</span>
+              <span className={styles.weekStatLabel}>
+                Compétences utilisées
+              </span>
             </div>
           </div>
 
           {/* Compétences */}
           {allSkills.length > 0 && (
             <div className={styles.weekSkills}>
-              <p className={styles.weekSkillsTitle}>Compétences de la semaine</p>
+              <p className={styles.weekSkillsTitle}>
+                Compétences de la semaine
+              </p>
               <div className={styles.weekSkillsTags}>
                 {allSkills.map((skill) => (
                   <Tag key={skill}>{skill}</Tag>
@@ -137,7 +156,9 @@ function WeekRecap({ weekNumber, entries, isAuthenticated }) {
                   <div style={{ flex: 1 }}>
                     <span className={styles.weekDayTitle}>{entry.title}</span>
                   </div>
-                  <span className={styles.weekDayDuration}>{entry.duration}h</span>
+                  <span className={styles.weekDayDuration}>
+                    {entry.duration}h
+                  </span>
                 </div>
               ))}
           </div>
@@ -147,7 +168,10 @@ function WeekRecap({ weekNumber, entries, isAuthenticated }) {
             <div className={styles.weekTextRecapHeader}>
               <p className={styles.weekSkillsTitle}>Récap de la semaine</p>
               {isAuthenticated && !editing && (
-                <button className={styles.editRecapBtn} onClick={() => setEditing(true)}>
+                <button
+                  className={styles.editRecapBtn}
+                  onClick={() => setEditing(true)}
+                >
                   <Pencil size={14} />
                   {recap?.text ? "Modifier" : "Rédiger"}
                 </button>
@@ -164,11 +188,18 @@ function WeekRecap({ weekNumber, entries, isAuthenticated }) {
                   rows={6}
                 />
                 <div className={styles.editRecapActions}>
-                  <button className={styles.saveRecapBtn} onClick={handleSave} disabled={saving}>
+                  <button
+                    className={styles.saveRecapBtn}
+                    onClick={handleSave}
+                    disabled={saving}
+                  >
                     <Check size={14} />
                     {saving ? "Sauvegarde..." : "Sauvegarder"}
                   </button>
-                  <button className={styles.cancelRecapBtn} onClick={handleCancel}>
+                  <button
+                    className={styles.cancelRecapBtn}
+                    onClick={handleCancel}
+                  >
                     <X size={14} />
                     Annuler
                   </button>
@@ -188,7 +219,6 @@ function WeekRecap({ weekNumber, entries, isAuthenticated }) {
               </div>
             )}
           </div>
-
         </div>
       )}
     </div>
@@ -257,7 +287,9 @@ function Journal({ setCurrentPage }) {
   };
 
   const weekGroups = groupByWeek(entries);
-  const sortedWeeks = Object.keys(weekGroups).map(Number).sort((a, b) => b - a);
+  const sortedWeeks = Object.keys(weekGroups)
+    .map(Number)
+    .sort((a, b) => b - a);
 
   return (
     <div className={styles.page}>
@@ -266,10 +298,15 @@ function Journal({ setCurrentPage }) {
           <div className={styles.headerTop}>
             <div>
               <h1 className={styles.title}>Journal de stage</h1>
-              <p className={styles.subtitle}>Suivi quotidien de mes activités chez Caplaser</p>
+              <p className={styles.subtitle}>
+                Suivi quotidien de mes activités chez Caplaser
+              </p>
             </div>
             {isAuthenticated && (
-              <button className={styles.addButton} onClick={() => setCurrentPage("addEntry")}>
+              <button
+                className={styles.addButton}
+                onClick={() => setCurrentPage("addEntry")}
+              >
                 + Ajouter une entrée
               </button>
             )}
@@ -293,13 +330,20 @@ function Journal({ setCurrentPage }) {
           )}
         </div>
 
-        {loading && <div className={styles.loading}><p>Chargement des entrées...</p></div>}
+        {loading && (
+          <div className={styles.loading}>
+            <p>Chargement des entrées...</p>
+          </div>
+        )}
 
         {!loading && entries.length === 0 && (
           <div className={styles.empty}>
             <p>Aucune entrée pour le moment.</p>
             {isAuthenticated && (
-              <button className={styles.addButton} onClick={() => setCurrentPage("addEntry")}>
+              <button
+                className={styles.addButton}
+                onClick={() => setCurrentPage("addEntry")}
+              >
                 Ajouter ma première entrée
               </button>
             )}
@@ -319,16 +363,31 @@ function Journal({ setCurrentPage }) {
                     <div className={styles.entryHeader}>
                       <h3 className={styles.entryTitle}>{entry.title}</h3>
                       <div className={styles.entryActions}>
-                        <span className={styles.entryDuration}>{entry.duration}h</span>
+                        <span className={styles.entryDuration}>
+                          {entry.duration}h
+                        </span>
                         {isAuthenticated && (
-                          <button className={styles.deleteButton} onClick={() => handleDelete(entry.id, entry.title)}>
+                          <button
+                            className={styles.deleteButton}
+                            onClick={() => handleDelete(entry.id, entry.title)}
+                          >
                             <Trash2 size={18} />
+                          </button>
+                        )}
+                        {isAuthenticated && (
+                          <button
+                            className={styles.editButton}
+                            onClick={() => navigateTo("addEntry", entry)}
+                          >
+                            <Pencil size={18} />
                           </button>
                         )}
                       </div>
                     </div>
                     <p className={styles.entryDate}>{entry.date}</p>
-                    <p className={styles.entryDescription}>{entry.description}</p>
+                    <p className={styles.entryDescription}>
+                      {entry.description}
+                    </p>
                     {entry.imageUrl && (
                       <div className={styles.entryImage}>
                         <img src={entry.imageUrl} alt={entry.title} />

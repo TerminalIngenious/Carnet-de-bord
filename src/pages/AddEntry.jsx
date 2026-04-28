@@ -1,23 +1,24 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { addEntry } from "../services/entries";
+import { addEntry, updateEntry } from "../services/entries";
 import styles from "./AddEntry.module.css";
 import Modal from "../components/Modal";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-function AddEntry({ setCurrentPage }) {
+function AddEntry({ setCurrentPage, entryToEdit }) {
   const { isAuthenticated } = useAuth();
+  const isEditing = !!entryToEdit
 
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  const [imagePreview, setImagePreview] = useState(entryToEdit?.imageUrl || null);
   const [formData, setFormData] = useState({
-    day: "",
-    date: "",
-    title: "",
-    description: "",
-    duration: 7,
-    skills: "",
+    day: entryToEdit?.day || "",
+    date: entryToEdit?.date || "",
+    title: entryToEdit?.title || "",
+    description: entryToEdit?.description || "",
+    duration: entryToEdit?.duration || 7,
+    skills: entryToEdit?.skills?.join(", ") || "",
   });
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -28,17 +29,13 @@ function AddEntry({ setCurrentPage }) {
     onConfirm: () => {},
   });
 
-  // Redirige si non connecté
   if (!isAuthenticated) {
     return (
       <div className={styles.page}>
         <div className={styles.notAllowed}>
           <h2>🔒 Accès refusé</h2>
-          <p>Tu dois être connecté pour ajouter une entrée.</p>
-          <button
-            className={styles.button}
-            onClick={() => setCurrentPage("login")}
-          >
+          <p>Tu dois être connecté pour {isEditing ? "modifier" : "ajouter"} une entrée.</p>
+          <button className={styles.button} onClick={() => setCurrentPage("login")}>
             Se connecter
           </button>
         </div>
@@ -48,17 +45,13 @@ function AddEntry({ setCurrentPage }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setImageFile(file);
-      // Prévisualisation
       const reader = new FileReader();
       reader.onloadend = () => setImagePreview(reader.result);
       reader.readAsDataURL(file);
@@ -70,37 +63,45 @@ function AddEntry({ setCurrentPage }) {
     setLoading(true);
 
     try {
-      // Upload de l'image si présente
-      let imageUrl = null;
+      // Upload nouvelle image si sélectionnée, sinon garde l'ancienne URL
+      let imageUrl = entryToEdit?.imageUrl || null;
       if (imageFile) {
         const storage = getStorage();
-        const storageRef = ref(
-          storage,
-          `entries/${Date.now()}_${imageFile.name}`
-        );
+        const storageRef = ref(storage, `entries/${Date.now()}_${imageFile.name}`);
         await uploadBytes(storageRef, imageFile);
         imageUrl = await getDownloadURL(storageRef);
       }
+      // Si l'image a été supprimée manuellement
+      if (!imagePreview && !imageFile) {
+        imageUrl = null;
+      }
 
-      // Transforme les skills en tableau
       const skillsArray = formData.skills
         .split(",")
         .map((skill) => skill.trim())
         .filter((skill) => skill !== "");
 
-      await addEntry({
+      const payload = {
         day: parseInt(formData.day),
         date: formData.date,
         title: formData.title,
         description: formData.description,
         duration: parseInt(formData.duration),
         skills: skillsArray,
-        imageUrl: imageUrl,
-      });
+        imageUrl,
+      };
+
+      if (isEditing) {
+        await updateEntry(entryToEdit.id, payload);
+      } else {
+        await addEntry(payload);
+      }
 
       setModalConfig({
-        title: "Entrée ajoutée !",
-        message: "Ton entrée a été enregistrée avec succès.",
+        title: isEditing ? "Entrée modifiée !" : "Entrée ajoutée !",
+        message: isEditing
+          ? "Tes modifications ont été enregistrées."
+          : "Ton entrée a été enregistrée avec succès.",
         type: "success",
         onConfirm: () => setCurrentPage("journal"),
       });
@@ -121,7 +122,9 @@ function AddEntry({ setCurrentPage }) {
   return (
     <div className={styles.page}>
       <div className={styles.container}>
-        <h1 className={styles.title}>Ajouter une entrée</h1>
+        <h1 className={styles.title}>
+          {isEditing ? "✏️ Modifier l'entrée" : "Ajouter une entrée"}
+        </h1>
 
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.row}>
@@ -138,7 +141,6 @@ function AddEntry({ setCurrentPage }) {
                 required
               />
             </div>
-
             <div className={styles.field}>
               <label className={styles.label}>Date</label>
               <input
@@ -150,7 +152,6 @@ function AddEntry({ setCurrentPage }) {
                 required
               />
             </div>
-
             <div className={styles.field}>
               <label className={styles.label}>Durée (heures)</label>
               <input
@@ -193,9 +194,7 @@ function AddEntry({ setCurrentPage }) {
           </div>
 
           <div className={styles.field}>
-            <label className={styles.label}>
-              Compétences (séparées par des virgules)
-            </label>
+            <label className={styles.label}>Compétences (séparées par des virgules)</label>
             <input
               type="text"
               name="skills"
@@ -207,7 +206,9 @@ function AddEntry({ setCurrentPage }) {
           </div>
 
           <div className={styles.field}>
-            <label className={styles.label}>Photo (optionnel)</label>
+            <label className={styles.label}>
+              Photo {isEditing ? "(laisse vide pour garder l'actuelle)" : "(optionnel)"}
+            </label>
             <input
               type="file"
               accept="image/*"
@@ -220,10 +221,7 @@ function AddEntry({ setCurrentPage }) {
                 <button
                   type="button"
                   className={styles.removeImage}
-                  onClick={() => {
-                    setImageFile(null);
-                    setImagePreview(null);
-                  }}
+                  onClick={() => { setImageFile(null); setImagePreview(null); }}
                 >
                   ✕ Supprimer
                 </button>
@@ -232,12 +230,8 @@ function AddEntry({ setCurrentPage }) {
           </div>
 
           <div className={styles.actions}>
-            <button
-              type="submit"
-              className={styles.buttonPrimary}
-              disabled={loading}
-            >
-              {loading ? "Enregistrement..." : "💾 Enregistrer"}
+            <button type="submit" className={styles.buttonPrimary} disabled={loading}>
+              {loading ? "Enregistrement..." : isEditing ? "💾 Sauvegarder" : "💾 Enregistrer"}
             </button>
             <button
               type="button"
@@ -250,7 +244,6 @@ function AddEntry({ setCurrentPage }) {
         </form>
       </div>
 
-      {/* Modal */}
       <Modal
         isOpen={modalOpen}
         title={modalConfig.title}

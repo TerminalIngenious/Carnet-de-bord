@@ -1,4 +1,4 @@
-import {useState} from 'react'
+import { useState } from 'react'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import Home from './pages/Home'
@@ -9,20 +9,31 @@ import Login from './pages/Login'
 import AddEntry from './pages/AddEntry'
 
 function App() {
-const [currentPage, setCurrentPage] = useState('home');
+  const [currentPage, setCurrentPage] = useState('home')
+  const [selectedEntry, setSelectedEntry] = useState(null)
+
+  const navigateTo = (page, entry = null) => {
+    setSelectedEntry(entry)
+    setCurrentPage(page)
+  }
 
   return (
     <div>
-      <Header currentPage={currentPage} setCurrentPage={setCurrentPage}/>
+      <Header currentPage={currentPage} setCurrentPage={setCurrentPage} />
       <main>
         {currentPage === 'home' && <Home setCurrentPage={setCurrentPage} />}
-        {currentPage === 'journal' && <Journal setCurrentPage={setCurrentPage} />}
-        {currentPage === 'entreprise' && <Entreprise/>}
-        {currentPage === 'metier' && <Metier/>}
+        {currentPage === 'journal' && <Journal navigateTo={navigateTo} setCurrentPage={setCurrentPage} />}
+        {currentPage === 'entreprise' && <Entreprise />}
+        {currentPage === 'metier' && <Metier />}
         {currentPage === 'login' && <Login setCurrentPage={setCurrentPage} />}
-        {currentPage === 'addEntry' && <AddEntry setCurrentPage={setCurrentPage} />}
+        {currentPage === 'addEntry' && (
+          <AddEntry
+            setCurrentPage={setCurrentPage}
+            entryToEdit={selectedEntry}
+          />
+        )}
       </main>
-      <Footer nom="Mattéo" annee={2026} setCurrentPage={setCurrentPage}/>
+      <Footer nom="Mattéo" annee={2026} setCurrentPage={setCurrentPage} />
     </div>
   )
 }
