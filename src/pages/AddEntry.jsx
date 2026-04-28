@@ -4,14 +4,17 @@ import { addEntry, updateEntry } from "../services/entries";
 import styles from "./AddEntry.module.css";
 import Modal from "../components/Modal";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import heic2any from "heic2any";
 
 function AddEntry({ setCurrentPage, entryToEdit }) {
   const { isAuthenticated } = useAuth();
-  const isEditing = !!entryToEdit
+  const isEditing = !!entryToEdit;
 
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(entryToEdit?.imageUrl || null);
+  const [imagePreview, setImagePreview] = useState(
+    entryToEdit?.imageUrl || null,
+  );
   const [formData, setFormData] = useState({
     day: entryToEdit?.day || "",
     date: entryToEdit?.date || "",
@@ -34,8 +37,14 @@ function AddEntry({ setCurrentPage, entryToEdit }) {
       <div className={styles.page}>
         <div className={styles.notAllowed}>
           <h2>🔒 Accès refusé</h2>
-          <p>Tu dois être connecté pour {isEditing ? "modifier" : "ajouter"} une entrée.</p>
-          <button className={styles.button} onClick={() => setCurrentPage("login")}>
+          <p>
+            Tu dois être connecté pour {isEditing ? "modifier" : "ajouter"} une
+            entrée.
+          </p>
+          <button
+            className={styles.button}
+            onClick={() => setCurrentPage("login")}
+          >
             Se connecter
           </button>
         </div>
@@ -48,14 +57,31 @@ function AddEntry({ setCurrentPage, entryToEdit }) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => setImagePreview(reader.result);
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    let finalFile = file;
+
+    // Convertit HEIC en JPEG automatiquement
+    if (
+      file.type === "image/heic" ||
+      file.name.toLowerCase().endsWith(".heic")
+    ) {
+      const converted = await heic2any({
+        blob: file,
+        toType: "image/jpeg",
+        quality: 0.8,
+      });
+      finalFile = new File([converted], file.name.replace(/\.heic$/i, ".jpg"), {
+        type: "image/jpeg",
+      });
     }
+
+    setImageFile(finalFile);
+    const reader = new FileReader();
+    reader.onloadend = () => setImagePreview(reader.result);
+    reader.readAsDataURL(finalFile);
   };
 
   const handleSubmit = async (e) => {
@@ -67,7 +93,10 @@ function AddEntry({ setCurrentPage, entryToEdit }) {
       let imageUrl = entryToEdit?.imageUrl || null;
       if (imageFile) {
         const storage = getStorage();
-        const storageRef = ref(storage, `entries/${Date.now()}_${imageFile.name}`);
+        const storageRef = ref(
+          storage,
+          `entries/${Date.now()}_${imageFile.name}`,
+        );
         await uploadBytes(storageRef, imageFile);
         imageUrl = await getDownloadURL(storageRef);
       }
@@ -194,7 +223,9 @@ function AddEntry({ setCurrentPage, entryToEdit }) {
           </div>
 
           <div className={styles.field}>
-            <label className={styles.label}>Compétences (séparées par des virgules)</label>
+            <label className={styles.label}>
+              Compétences (séparées par des virgules)
+            </label>
             <input
               type="text"
               name="skills"
@@ -207,7 +238,10 @@ function AddEntry({ setCurrentPage, entryToEdit }) {
 
           <div className={styles.field}>
             <label className={styles.label}>
-              Photo {isEditing ? "(laisse vide pour garder l'actuelle)" : "(optionnel)"}
+              Photo{" "}
+              {isEditing
+                ? "(laisse vide pour garder l'actuelle)"
+                : "(optionnel)"}
             </label>
             <input
               type="file"
@@ -221,7 +255,10 @@ function AddEntry({ setCurrentPage, entryToEdit }) {
                 <button
                   type="button"
                   className={styles.removeImage}
-                  onClick={() => { setImageFile(null); setImagePreview(null); }}
+                  onClick={() => {
+                    setImageFile(null);
+                    setImagePreview(null);
+                  }}
                 >
                   ✕ Supprimer
                 </button>
@@ -230,8 +267,16 @@ function AddEntry({ setCurrentPage, entryToEdit }) {
           </div>
 
           <div className={styles.actions}>
-            <button type="submit" className={styles.buttonPrimary} disabled={loading}>
-              {loading ? "Enregistrement..." : isEditing ? "💾 Sauvegarder" : "💾 Enregistrer"}
+            <button
+              type="submit"
+              className={styles.buttonPrimary}
+              disabled={loading}
+            >
+              {loading
+                ? "Enregistrement..."
+                : isEditing
+                  ? "💾 Sauvegarder"
+                  : "💾 Enregistrer"}
             </button>
             <button
               type="button"
