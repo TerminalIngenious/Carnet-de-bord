@@ -3,7 +3,24 @@ import { useAuth } from "../context/AuthContext";
 import { addEntry, updateEntry } from "../services/entries";
 import styles from "./AddEntry.module.css";
 import Modal from "../components/Modal";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
+const CLOUDINARY_CLOUD_NAME = "dqq4wpwta";
+const CLOUDINARY_UPLOAD_PRESET = "gx6zplkq";
+
+async function uploadToCloudinary(file) {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+  const response = await fetch(
+    `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+    { method: "POST", body: formData }
+  );
+
+  if (!response.ok) throw new Error("Erreur upload Cloudinary");
+  const data = await response.json();
+  return data.secure_url;
+}
 
 function AddEntry({ setCurrentPage, entryToEdit }) {
   const { isAuthenticated } = useAuth();
@@ -11,9 +28,7 @@ function AddEntry({ setCurrentPage, entryToEdit }) {
 
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(
-    entryToEdit?.imageUrl || null,
-  );
+  const [imagePreview, setImagePreview] = useState(entryToEdit?.imageUrl || null);
   const [formData, setFormData] = useState({
     day: entryToEdit?.day || "",
     date: entryToEdit?.date || "",
@@ -36,14 +51,8 @@ function AddEntry({ setCurrentPage, entryToEdit }) {
       <div className={styles.page}>
         <div className={styles.notAllowed}>
           <h2>🔒 Accès refusé</h2>
-          <p>
-            Tu dois être connecté pour {isEditing ? "modifier" : "ajouter"} une
-            entrée.
-          </p>
-          <button
-            className={styles.button}
-            onClick={() => setCurrentPage("login")}
-          >
+          <p>Tu dois être connecté pour {isEditing ? "modifier" : "ajouter"} une entrée.</p>
+          <button className={styles.button} onClick={() => setCurrentPage("login")}>
             Se connecter
           </button>
         </div>
@@ -70,16 +79,10 @@ function AddEntry({ setCurrentPage, entryToEdit }) {
     setLoading(true);
 
     try {
-      // Upload nouvelle image si sélectionnée, sinon garde l'ancienne URL
+      // Upload image sur Cloudinary si nouvelle image sélectionnée
       let imageUrl = entryToEdit?.imageUrl || null;
       if (imageFile) {
-        const storage = getStorage();
-        const storageRef = ref(
-          storage,
-          `entries/${Date.now()}_${imageFile.name}`,
-        );
-        await uploadBytes(storageRef, imageFile);
-        imageUrl = await getDownloadURL(storageRef);
+        imageUrl = await uploadToCloudinary(imageFile);
       }
       // Si l'image a été supprimée manuellement
       if (!imagePreview && !imageFile) {
@@ -219,10 +222,7 @@ function AddEntry({ setCurrentPage, entryToEdit }) {
 
           <div className={styles.field}>
             <label className={styles.label}>
-              Photo{" "}
-              {isEditing
-                ? "(laisse vide pour garder l'actuelle)"
-                : "(optionnel)"}
+              Photo {isEditing ? "(laisse vide pour garder l'actuelle)" : "(optionnel)"}
             </label>
             <input
               type="file"
@@ -236,10 +236,7 @@ function AddEntry({ setCurrentPage, entryToEdit }) {
                 <button
                   type="button"
                   className={styles.removeImage}
-                  onClick={() => {
-                    setImageFile(null);
-                    setImagePreview(null);
-                  }}
+                  onClick={() => { setImageFile(null); setImagePreview(null); }}
                 >
                   ✕ Supprimer
                 </button>
@@ -248,16 +245,8 @@ function AddEntry({ setCurrentPage, entryToEdit }) {
           </div>
 
           <div className={styles.actions}>
-            <button
-              type="submit"
-              className={styles.buttonPrimary}
-              disabled={loading}
-            >
-              {loading
-                ? "Enregistrement..."
-                : isEditing
-                  ? "💾 Sauvegarder"
-                  : "💾 Enregistrer"}
+            <button type="submit" className={styles.buttonPrimary} disabled={loading}>
+              {loading ? "Enregistrement..." : isEditing ? "💾 Sauvegarder" : "💾 Enregistrer"}
             </button>
             <button
               type="button"
