@@ -63,19 +63,34 @@ function AddEntry({ setCurrentPage, entryToEdit }) {
 
     let finalFile = file;
 
-    // Convertit HEIC en JPEG automatiquement
     if (
       file.type === "image/heic" ||
-      file.name.toLowerCase().endsWith(".heic")
+      file.type === "image/heif" ||
+      file.name.toLowerCase().endsWith(".heic") ||
+      file.name.toLowerCase().endsWith(".heif")
     ) {
-      const converted = await heic2any({
-        blob: file,
-        toType: "image/jpeg",
-        quality: 0.8,
-      });
-      finalFile = new File([converted], file.name.replace(/\.heic$/i, ".jpg"), {
-        type: "image/jpeg",
-      });
+      try {
+        const converted = await heic2any({
+          blob: file,
+          toType: "image/jpeg",
+          quality: 0.8,
+        });
+        // heic2any peut retourner un tableau ou un blob selon les cas
+        const blob = Array.isArray(converted) ? converted[0] : converted;
+        finalFile = new File(
+          [blob],
+          file.name.replace(/\.(heic|heif)$/i, ".jpg"),
+          {
+            type: "image/jpeg",
+          },
+        );
+      } catch (err) {
+        console.error("Erreur conversion HEIC:", err);
+        alert(
+          "Impossible de convertir cette image. Essaie de l'exporter en JPEG depuis ton téléphone.",
+        );
+        return;
+      }
     }
 
     setImageFile(finalFile);
