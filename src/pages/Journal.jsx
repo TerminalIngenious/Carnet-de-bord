@@ -230,7 +230,7 @@ function Journal({ setCurrentPage, navigateTo }) {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState("journal");
-
+  const [lightboxImg, setLightboxImg] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalConfig, setModalConfig] = useState({
     title: "",
@@ -389,8 +389,14 @@ function Journal({ setCurrentPage, navigateTo }) {
                       {entry.description}
                     </p>
                     {entry.imageUrl && (
-                      <div className={styles.entryImage}>
+                      <div
+                        className={styles.entryImage}
+                        onClick={() => setLightboxImg(entry.imageUrl)}
+                      >
                         <img src={entry.imageUrl} alt={entry.title} />
+                        <div className={styles.imageOverlay}>
+                          Cliquez pour agrandir
+                        </div>
                       </div>
                     )}
                     <div className={styles.entrySkills}>
@@ -430,6 +436,11 @@ function Journal({ setCurrentPage, navigateTo }) {
         confirmText="Supprimer"
         cancelText="Annuler"
       />
+      {lightboxImg && (
+        <div className={styles.lightbox} onClick={() => setLightboxImg(null)}>
+          <img src={lightboxImg} alt="Plein écran" />
+        </div>
+      )}
     </div>
   );
 }
