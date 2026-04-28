@@ -225,7 +225,7 @@ function WeekRecap({ weekNumber, entries, isAuthenticated }) {
   );
 }
 
-function Journal({ setCurrentPage }) {
+function Journal({ setCurrentPage, navigateTo }) {
   const { isAuthenticated } = useAuth();
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
