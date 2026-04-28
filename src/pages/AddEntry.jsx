@@ -4,7 +4,6 @@ import { addEntry, updateEntry } from "../services/entries";
 import styles from "./AddEntry.module.css";
 import Modal from "../components/Modal";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import heic2any from "heic2any";
 
 function AddEntry({ setCurrentPage, entryToEdit }) {
   const { isAuthenticated } = useAuth();
@@ -57,46 +56,13 @@ function AddEntry({ setCurrentPage, entryToEdit }) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleImageChange = async (e) => {
+  const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
-    let finalFile = file;
-
-    if (
-      file.type === "image/heic" ||
-      file.type === "image/heif" ||
-      file.name.toLowerCase().endsWith(".heic") ||
-      file.name.toLowerCase().endsWith(".heif")
-    ) {
-      try {
-        const converted = await heic2any({
-          blob: file,
-          toType: "image/jpeg",
-          quality: 0.8,
-        });
-        // heic2any peut retourner un tableau ou un blob selon les cas
-        const blob = Array.isArray(converted) ? converted[0] : converted;
-        finalFile = new File(
-          [blob],
-          file.name.replace(/\.(heic|heif)$/i, ".jpg"),
-          {
-            type: "image/jpeg",
-          },
-        );
-      } catch (err) {
-        console.error("Erreur conversion HEIC:", err);
-        alert(
-          "Impossible de convertir cette image. Essaie de l'exporter en JPEG depuis ton téléphone.",
-        );
-        return;
-      }
-    }
-
-    setImageFile(finalFile);
+    setImageFile(file);
     const reader = new FileReader();
     reader.onloadend = () => setImagePreview(reader.result);
-    reader.readAsDataURL(finalFile);
+    reader.readAsDataURL(file);
   };
 
   const handleSubmit = async (e) => {
@@ -260,7 +226,7 @@ function AddEntry({ setCurrentPage, entryToEdit }) {
             </label>
             <input
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp"
               className={styles.input}
               onChange={handleImageChange}
             />
