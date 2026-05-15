@@ -112,33 +112,6 @@ function Metier() {
             </Card>
           </div>
         </section>
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Interviews</h2>
-          <Card>
-            <div className={styles.interviewHeader}>
-              <div className={styles.interviewAvatar}>
-                <UserCircle size={40} color="#3b82f6" />
-              </div>
-              <div className={styles.interviewInfo}>
-                <div className={styles.interviewName}>
-                  {metier.interview.name}
-                </div>
-                <div className={styles.interviewRole}>
-                  {metier.interview.role}
-                </div>
-              </div>
-            </div>
-
-            <div className={styles.interviewQuestions}>
-              {metier.interview.questions.map((item, index) => (
-                <div key={index} className={styles.questionBlock}>
-                  <p className={styles.question}>{item.question}</p>
-                  <p className={styles.answer}>"{item.answer}"</p>
-                </div>
-              ))}
-            </div>
-          </Card>
-        </section>
       </div>
     </div>
   );
